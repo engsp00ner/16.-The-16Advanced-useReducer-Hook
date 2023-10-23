@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function options({question}) {
+export default function options({question ,dispatch,Answer}) {
   return (
     <div className="options">
         {question.options.map((option) => (
