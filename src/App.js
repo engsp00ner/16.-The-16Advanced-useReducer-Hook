@@ -4,6 +4,8 @@ import Header from "./Header";
 import Main from "./main";
 import Loader from "./Loader";
 import Error from "./Error";
+import StartScreen from "./StartScreen";
+import Question from "./Question";
 const InitialState = {
   Questions: [],
 
@@ -29,13 +31,19 @@ function reducer(state, action) {
         ...state,
         status: "error",
       };
+    case "start":
+      return {
+        ...state,
+        status: "active",
+      };
     default:
   }
 }
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { questions, status } = state;
+  const { Questions, status } = state;
+  const NumQuestions = Questions.length;
   useEffect(
     function () {
       async function GetQuestions() {
@@ -46,7 +54,7 @@ export default function App() {
             throw new Error("Something went wrong can`t load data ");
           }
           console.log(res);
-          console.log(status);
+          console.log(`First status After Fetch is :${status}`);
           const data = await res.json();
           //1-DataReceived
           dispatch({ type: "DataReceived", payload: data });
@@ -62,7 +70,7 @@ export default function App() {
       }
       GetQuestions();
     },
-    [status]
+    []
   );
 
   return (
@@ -71,6 +79,8 @@ export default function App() {
       <Main>
         {status === "Loading" && <Loader />}
         {status === "error" && <Error />}
+        {status === "ready" && <StartScreen NumQuestions={NumQuestions} dispatch={dispatch} />}
+        {status === "active" && <Question />}
       </Main>
     </div>
   );
