@@ -6,6 +6,7 @@ import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
+import NextButton from "./NextButton";
 const InitialState = {
   Questions: [],
 
@@ -49,7 +50,7 @@ function reducer(state, action) {
       };
     case "NewAnswer":
       //we will grap the current question
-      const question = state.Questions.at(state.index);
+      const question = state.Questions.at(state.Index);
       console.log(`the current question is :${question}`);
       return {
         ...state,
@@ -59,6 +60,13 @@ function reducer(state, action) {
           action.payload === question.correctOption
             ? state.Points + question.points
             : state.Points,
+      };
+    case "NextQuestion":
+      console.log(`the current index is ${state.Index}`);
+      return {
+        ...state,
+        Index: state.Index + 1,
+        Answer: null,
       };
     default:
   }
@@ -110,6 +118,7 @@ export default function App() {
             Answer={Answer}
           />
         )}
+        <NextButton dispatch={dispatch} Answer={Answer} />
       </Main>
     </div>
   );
