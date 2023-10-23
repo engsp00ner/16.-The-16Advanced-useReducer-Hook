@@ -8,6 +8,7 @@ import StartScreen from "./StartScreen";
 import Question from "./Question";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
+import FinishedScreen from "./FinishedScreen";
 const InitialState = {
   Questions: [],
 
@@ -30,6 +31,7 @@ const InitialState = {
   //this will define the user score,
   //will be updated with each correct answer
   Points: 0,
+  HighScore: 0,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -69,13 +71,20 @@ function reducer(state, action) {
         Index: state.Index + 1,
         Answer: null,
       };
+    case "Finished":
+      return {
+        ...state,
+        status: "Finished",
+        HighScore:
+          state.Points > state.HighScore ? state.points : state.HighScore,
+      };
     default:
   }
 }
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { Questions, status, Index, Answer, Points } = state;
+  const { Questions, status, Index, Answer, Points, HighScore } = state;
   const NumQuestions = Questions.length;
   const MaxPossiblePoints = Questions.reduce(
     (prev, cur) => prev + cur.points,
@@ -132,9 +141,21 @@ export default function App() {
               dispatch={dispatch}
               Answer={Answer}
             />
+            <NextButton
+              dispatch={dispatch}
+              Answer={Answer}
+              Index={Index}
+              NumQuestions={NumQuestions}
+            />
           </>
         )}
-        <NextButton dispatch={dispatch} Answer={Answer} />
+        {status === "Finished" && (
+          <FinishedScreen
+            Points={Points}
+            MaxPossiblePoints={MaxPossiblePoints}
+            HighScore={HighScore}
+          />
+        )}
       </Main>
     </div>
   );
