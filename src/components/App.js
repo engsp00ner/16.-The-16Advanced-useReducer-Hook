@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "react";
-import "./App.css";
+import "../App.css";
 import Header from "./Header";
 import Main from "./main";
 import Loader from "./Loader";
@@ -17,6 +17,10 @@ const InitialState = {
   //4-'active' data is displayed for the user
   //5-'finished' the questions are answered
   Status: "Loading",
+
+  //in order to be able to track the current question
+  //we need to keep track of the index
+  Index: 0,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -42,36 +46,33 @@ function reducer(state, action) {
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { Questions, status } = state;
+  const { Questions, status, Index } = state;
   const NumQuestions = Questions.length;
-  useEffect(
-    function () {
-      async function GetQuestions() {
-        try {
-          const res = await fetch("http://localhost:8000/questions");
-          if (!res.ok) {
-            dispatch({ type: "DataFailed" });
-            throw new Error("Something went wrong can`t load data ");
-          }
-          console.log(res);
-          console.log(`First status After Fetch is :${status}`);
-          const data = await res.json();
-          //1-DataReceived
-          dispatch({ type: "DataReceived", payload: data });
-          console.log(data);
-        } catch (err) {
-          //2-DataFailed
+  useEffect(function () {
+    async function GetQuestions() {
+      try {
+        const res = await fetch("http://localhost:8000/questions");
+        if (!res.ok) {
           dispatch({ type: "DataFailed" });
-          console.log(err);
-          console.log(`Current status is ${status}`);
-        } finally {
-          console.log(`Final state Is ${status}`);
+          throw new Error("Something went wrong can`t load data ");
         }
+        console.log(res);
+        console.log(`First status After Fetch is :${status}`);
+        const data = await res.json();
+        //1-DataReceived
+        dispatch({ type: "DataReceived", payload: data });
+        console.log(data);
+      } catch (err) {
+        //2-DataFailed
+        dispatch({ type: "DataFailed" });
+        console.log(err);
+        console.log(`Current status is ${status}`);
+      } finally {
+        console.log(`Final state Is ${status}`);
       }
-      GetQuestions();
-    },
-    []
-  );
+    }
+    GetQuestions();
+  }, []);
 
   return (
     <div className="app">
@@ -79,8 +80,10 @@ export default function App() {
       <Main>
         {status === "Loading" && <Loader />}
         {status === "error" && <Error />}
-        {status === "ready" && <StartScreen NumQuestions={NumQuestions} dispatch={dispatch} />}
-        {status === "active" && <Question />}
+        {status === "ready" && (
+          <StartScreen NumQuestions={NumQuestions} dispatch={dispatch} />
+        )}
+        {status === "active" && <Question question={Questions[Index]} />}
       </Main>
     </div>
   );
