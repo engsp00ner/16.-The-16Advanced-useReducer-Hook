@@ -6,9 +6,9 @@ import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
-import NextButton from "./NextButton";
 import Progress from "./Progress";
 import FinishedScreen from "./FinishedScreen";
+import Footer from "./Footer";
 const InitialState = {
   Questions: [],
 
@@ -32,7 +32,11 @@ const InitialState = {
   //this will define the user score,
   //will be updated with each correct answer
   Points: 0,
+
+  //store the highest score
   HighScore: 0,
+
+  SecondsRemaning: 10,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -83,13 +87,27 @@ function reducer(state, action) {
         Status: "ready",
         Questions: state.Questions,
       };
+    case "Tick":
+      return {
+        ...state,
+        SecondsRemaning: state.SecondsRemaning - 1,
+        Status: state.SecondsRemaning === 0 ? "Finished" : state.status,
+      };
     default:
   }
 }
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { Questions, Status, Index, Answer, Points, HighScore } = state;
+  const {
+    Questions,
+    Status,
+    Index,
+    Answer,
+    Points,
+    HighScore,
+    SecondsRemaning,
+  } = state;
   const NumQuestions = Questions.length;
   const MaxPossiblePoints = Questions.reduce(
     (prev, cur) => prev + cur.points,
@@ -139,11 +157,12 @@ export default function App() {
               dispatch={dispatch}
               Answer={Answer}
             />
-            <NextButton
+            <Footer
               dispatch={dispatch}
               Answer={Answer}
               Index={Index}
               NumQuestions={NumQuestions}
+              SecondsRemaning={SecondsRemaning}
             />
           </>
         )}
