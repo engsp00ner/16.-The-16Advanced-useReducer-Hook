@@ -19,6 +19,7 @@ const InitialState = {
   //3-'ready' data is being fetched and ready for implementing
   //4-'active' data is displayed for the user
   //5-'finished' the questions are answered
+  //6-'reset' in order to re-start the quiz
   Status: "Loading",
 
   //in order to be able to track the current question
@@ -39,22 +40,21 @@ function reducer(state, action) {
       return {
         ...state,
         Questions: action.payload,
-        status: "ready",
+        Status: "ready",
       };
     case "DataFailed":
       return {
         ...state,
-        status: "error",
+        Status: "error",
       };
     case "start":
       return {
         ...state,
-        status: "active",
+        Status: "active",
       };
     case "NewAnswer":
       //we will grap the current question
       const question = state.Questions.at(state.Index);
-      console.log(`the current question is :${question}`);
       return {
         ...state,
         Answer: action.payload,
@@ -65,7 +65,6 @@ function reducer(state, action) {
             : state.Points,
       };
     case "NextQuestion":
-      console.log(`the current index is ${state.Index}`);
       return {
         ...state,
         Index: state.Index + 1,
@@ -74,9 +73,15 @@ function reducer(state, action) {
     case "Finished":
       return {
         ...state,
-        status: "Finished",
+        Status: "Finished",
         HighScore:
           state.Points > state.HighScore ? state.points : state.HighScore,
+      };
+    case "Reset":
+      return {
+        ...InitialState,
+        Status: "Ready",
+        Questions: state.Questions,
       };
     default:
   }
@@ -84,14 +89,12 @@ function reducer(state, action) {
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { Questions, status, Index, Answer, Points, HighScore } = state;
+  const { Questions, Status, Index, Answer, Points, HighScore } = state;
   const NumQuestions = Questions.length;
   const MaxPossiblePoints = Questions.reduce(
     (prev, cur) => prev + cur.points,
     0
   );
-  console.log(`MaxPossiblePoints:${MaxPossiblePoints}`);
-  console.log(`ScoredPoints :${Points}`);
   useEffect(function () {
     async function GetQuestions() {
       try {
@@ -100,19 +103,14 @@ export default function App() {
           dispatch({ type: "DataFailed" });
           throw new Error("Something went wrong can`t load data ");
         }
-        console.log(res);
-        console.log(`First status After Fetch is :${status}`);
         const data = await res.json();
         //1-DataReceived
         dispatch({ type: "DataReceived", payload: data });
-        console.log(data);
       } catch (err) {
         //2-DataFailed
         dispatch({ type: "DataFailed" });
         console.log(err);
-        console.log(`Current status is ${status}`);
       } finally {
-        console.log(`Final state Is ${status}`);
       }
     }
     GetQuestions();
@@ -122,12 +120,12 @@ export default function App() {
     <div className="app">
       <Header />
       <Main>
-        {status === "Loading" && <Loader />}
-        {status === "error" && <Error />}
-        {status === "ready" && (
+        {Status === "Loading" && <Loader />}
+        {Status === "error" && <Error />}
+        {Status === "ready" && (
           <StartScreen NumQuestions={NumQuestions} dispatch={dispatch} />
         )}
-        {status === "active" && (
+        {Status === "active" && (
           <>
             <Progress
               Index={Index}
@@ -149,11 +147,12 @@ export default function App() {
             />
           </>
         )}
-        {status === "Finished" && (
+        {Status === "Finished" && (
           <FinishedScreen
             Points={Points}
             MaxPossiblePoints={MaxPossiblePoints}
             HighScore={HighScore}
+            dispatch={dispatch}
           />
         )}
       </Main>
