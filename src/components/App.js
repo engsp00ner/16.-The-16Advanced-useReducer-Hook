@@ -22,8 +22,12 @@ const InitialState = {
   //we need to keep track of the index
   Index: 0,
 
-  //this will be the correct answer to the question 
-  Answer :null,
+  //this will be the correct answer to the question
+  Answer: null,
+
+  //this will define the user score,
+  //will be updated with each correct answer
+  Points: 0,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -43,18 +47,26 @@ function reducer(state, action) {
         ...state,
         status: "active",
       };
-      case "NewAnswer":
-        return{
-          ...state ,
-          Answer:action.payload,
-        };
+    case "NewAnswer":
+      //we will grap the current question
+      const question = state.Questions.at(state.index);
+      console.log(`the current question is :${question}`);
+      return {
+        ...state,
+        Answer: action.payload,
+
+        Points:
+          action.payload === question.correctOption
+            ? state.Points + question.points
+            : state.Points,
+      };
     default:
   }
 }
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
-  const { Questions, status, Index ,Answer} = state;
+  const { Questions, status, Index, Answer } = state;
   const NumQuestions = Questions.length;
   useEffect(function () {
     async function GetQuestions() {
@@ -91,7 +103,13 @@ export default function App() {
         {status === "ready" && (
           <StartScreen NumQuestions={NumQuestions} dispatch={dispatch} />
         )}
-        {status === "active" && <Question question={Questions[Index]} dispatch={dispatch} Answer={Answer} />}
+        {status === "active" && (
+          <Question
+            question={Questions[Index]}
+            dispatch={dispatch}
+            Answer={Answer}
+          />
+        )}
       </Main>
     </div>
   );
