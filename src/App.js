@@ -2,7 +2,8 @@ import { useEffect, useReducer } from "react";
 import "./App.css";
 import Header from "./Header";
 import Main from "./main";
-
+import Loader from "./Loader";
+import Error from "./Error";
 const InitialState = {
   Questions: [],
 
@@ -24,8 +25,9 @@ function reducer(state, action) {
         status: "ready",
       };
     case "DataFailed":
-      return{
-        ...state , status:"error",
+      return {
+        ...state,
+        status: "error",
       };
     default:
   }
@@ -33,35 +35,42 @@ function reducer(state, action) {
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, InitialState);
+  const { questions, status } = state;
   useEffect(
     function () {
       async function GetQuestions() {
         try {
           const res = await fetch("http://localhost:8000/questions");
+          if (!res.ok) {
+            dispatch({ type: "DataFailed" });
+            throw new Error("Something went wrong can`t load data ");
+          }
           console.log(res);
-          if (!res.ok) throw new Error("Something went wrong can`t load data ");
+          console.log(status);
           const data = await res.json();
           //1-DataReceived
           dispatch({ type: "DataReceived", payload: data });
           console.log(data);
         } catch (err) {
           //2-DataFailed
-          dispatch({ type: "DataFailed " });
+          dispatch({ type: "DataFailed" });
           console.log(err);
+          console.log(`Current status is ${status}`);
         } finally {
+          console.log(`Final state Is ${status}`);
         }
       }
       GetQuestions();
     },
-    [dispatch]
+    [status]
   );
 
   return (
     <div className="app">
       <Header />
       <Main>
-        <p>1/15</p>
-        <p>Questions?</p>
+        {status === "Loading" && <Loader />}
+        {status === "error" && <Error />}
       </Main>
     </div>
   );
