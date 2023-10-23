@@ -80,7 +80,7 @@ function reducer(state, action) {
     case "Reset":
       return {
         ...InitialState,
-        Status: "Ready",
+        Status: "ready",
         Questions: state.Questions,
       };
     default:
