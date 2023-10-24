@@ -9,6 +9,8 @@ import Question from "./Question";
 import Progress from "./Progress";
 import FinishedScreen from "./FinishedScreen";
 import Footer from "./Footer";
+
+const SEC_PER_QUESTION=20;
 const InitialState = {
   Questions: [],
 
@@ -36,7 +38,8 @@ const InitialState = {
   //store the highest score
   HighScore: 0,
 
-  SecondsRemaning: 10,
+  //desired time to answer all the questoins
+  SecondsRemaning: null,
 };
 function reducer(state, action) {
   switch (action.type) {
@@ -55,6 +58,8 @@ function reducer(state, action) {
       return {
         ...state,
         Status: "active",
+        SecondsRemaning :state.Questions.length *SEC_PER_QUESTION,
+
       };
     case "NewAnswer":
       //we will grap the current question
@@ -91,7 +96,7 @@ function reducer(state, action) {
       return {
         ...state,
         SecondsRemaning: state.SecondsRemaning - 1,
-        Status: state.SecondsRemaning === 0 ? "Finished" : state.status,
+        Status: state.SecondsRemaning === 0 ? "Finished" : state.Status,
       };
     default:
   }
